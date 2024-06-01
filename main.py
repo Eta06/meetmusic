@@ -14,16 +14,15 @@ import sendmusic as sm
 opt = webdriver.ChromeOptions()
 opt.add_argument('--disable-blink-features=AutomationControlled')  # Prevent detection
 opt.add_argument('--start-maximized')
-opt.add_argument("--mute-audio")
+opt.add_argument("−−mute−audio")
+# opt.add_argument("--headless")
 opt.add_experimental_option("prefs", {  # Set media/notification permissions
     "profile.default_content_setting_values.media_stream_mic": 1,
-    "profile.default_content_setting_values.media_stream_camera": 1,
+    "profile.default_content_setting_values.media_stream_camera": 0,
     "profile.default_content_setting_values.notifications": 1
 })
 
-meet_input = "https://meet.google.com/qfo-acgj-erm"
-# Bypass for development
-# meet_input = input("Enter Google Meet URL or meeting ID: ")
+meet_input = input("Enter Google Meet URL or meeting ID: ")
 
 # Construct the full URL
 if meet_input.startswith("https://"):
@@ -34,9 +33,7 @@ else:
     url = f"https://meet.google.com/{meet_input}"
 
 sm.list_virtual_audio_devices()
-device_index = 7
-# Bypass for development
-# device_index = int(input("Select the device index to stream audio to: "))
+device_index = int(input("Select the device index to stream audio to: "))
 
 wd = webdriver.Chrome(options=opt)
 
@@ -52,11 +49,14 @@ try:
 except Exception as e:
     print("Error handling permissions:", e)
 
+wd.find_element(By.XPATH, "//span[text()='Continue without camera']").click()
+
 # Find and fill the "Your name" input
 try:
     name_input = wd.find_element(By.XPATH, "//input[@placeholder='Your name']")
     name_input.send_keys("MeetMusic - Github/Eta06")  # Replace with your actual name
     # name_input.send_keys(Keys.RETURN)  # Press Enter to confirm
+
 except Exception as e:
     print("Error finding or filling the 'Your name' field:", e)
 
@@ -68,7 +68,9 @@ try:
     except Exception as e:
         print("Error joining meeting:", e)
         # Open settings menu
-    time.sleep(15)
+    for i in range(15, 0, -1):
+        print("Please Allow MeetMusic In", i, "seconds")
+        time.sleep(1)
     more_options_button = wd.find_elements(By.XPATH, "//button[@aria-label='More options']")
     # List how many elements
     for i in range(len(more_options_button)):
@@ -113,8 +115,9 @@ try:
 except Exception as e:
     print("Error selecting microphone or disabling sound:", e)
 
-sm.stream_audio_to_device("motivepeterpan.wav", device_index)
-
+print("Playback started")
+sm.stream_audio_to_device("example.wav", device_index)
+print("Playback Ended")
 # Keep the browser open until the user presses Enter
 input("Press Enter to close the browser...")
 
