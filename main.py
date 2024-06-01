@@ -3,12 +3,24 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.support import expected_conditions as EC
-
+import threading
 import time
 
 from selenium.webdriver.support.wait import WebDriverWait
 
 import sendmusic as sm
+
+
+def check_for_commands(wd):
+    print("Waiting for commands...")
+    chat = wd.find_elements(By.XPATH, "//button[@aria-label='Chat with everyone']")
+    chat[0].click()
+    time.sleep(1)
+    chat_messages = wd.find_element(By.CSS_SELECTOR, "div[aria-live='polite']")
+    while True:
+        chat_messages_html = chat_messages.get_attribute("innerHTML")
+        print(chat_messages_html)
+    # Get the inside html of chat_messages
 
 # Launch the Chrome browser with options
 opt = webdriver.ChromeOptions()
@@ -116,8 +128,13 @@ except Exception as e:
     print("Error selecting microphone or disabling sound:", e)
 
 print("Playback started")
-sm.stream_audio_to_device("example.wav", device_index)
+# sm.stream_audio_to_device("motivepeterpan.wav", device_index)
 print("Playback Ended")
+
+t1 = threading.Thread(check_for_commands(wd), name="check_for_commands")
+t1.start()
+
+
 # Keep the browser open until the user presses Enter
 input("Press Enter to close the browser...")
 
