@@ -20,7 +20,7 @@ def check_for_commands(wd):
     while True:
         chat_messages_html = chat_messages.get_attribute("innerHTML")
         print(chat_messages_html)
-    # Get the inside html of chat_messages
+
 
 # Launch the Chrome browser with options
 opt = webdriver.ChromeOptions()
