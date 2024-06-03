@@ -3,6 +3,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 from selenium.webdriver.common.by import By
 import threading
+from commands import *
 import time
 
 html_start = '''
@@ -34,7 +35,7 @@ commands = [
 
 
 def command_handler(command):
-    print("Last command: " + command)
+
 
 
 def check_for_commands(wd):
