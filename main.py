@@ -18,8 +18,23 @@ html_end = '''
 </html>
 '''
 
+
+""" For later load config
+def readConfig():
+    try:
+        with open('config.json') as json_file:
+            data = json.load(json_file)
+            return data
+    except:
+        return {}
+"""
+commands = [
+    "help", "play", "stop", "pause", "next", "previous", "shuffle", "loop", "volume", "quit", "clip", "mute"
+]
+
+
 def command_handler(command):
-    pass
+    print("Last command: " + command)
 
 
 def check_for_commands(wd):
@@ -27,7 +42,7 @@ def check_for_commands(wd):
     chat = wd.find_elements(By.XPATH, "//button[@aria-label='Chat with everyone']")
     chat[0].click()
     time.sleep(1)
-    history = None
+    history = []
     while True:
         chat_messages = wd.find_element(By.CSS_SELECTOR, "div[aria-live='polite']")
         chat_messages_html = chat_messages.get_attribute("innerHTML")
@@ -48,6 +63,13 @@ def check_for_commands(wd):
         if chat_json != history:
             print(chat_json)
             history = chat_json
+            try:
+                last_message = chat_data[-1]['messages'][-1]
+                if last_message.startswith('!'):
+                    if last_message[1:] in commands:
+                        command_handler(last_message)
+            except:
+                pass
 
 
 # Launch the Chrome browser with options
