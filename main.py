@@ -18,19 +18,21 @@ html_end = '''
 </html>
 '''
 
+def command_handler(command):
+    pass
+
 
 def check_for_commands(wd):
     print("Waiting for commands...")
     chat = wd.find_elements(By.XPATH, "//button[@aria-label='Chat with everyone']")
     chat[0].click()
     time.sleep(1)
-    chat_data = []
+    history = None
     while True:
         chat_messages = wd.find_element(By.CSS_SELECTOR, "div[aria-live='polite']")
         chat_messages_html = chat_messages.get_attribute("innerHTML")
-        print(chat_messages_html)
         soup = BeautifulSoup(html_start + chat_messages_html + html_end, 'html.parser')
-
+        chat_data = []
         # Find all elements with style attribute that indicates message order
         message_blocks = soup.find_all(attrs={"style": True})
 
@@ -42,6 +44,10 @@ def check_for_commands(wd):
 
         # Output the result as JSON
         chat_json = json.dumps(chat_data, ensure_ascii=False, indent=4)
+
+        if chat_json != history:
+            print(chat_json)
+            history = chat_json
 
 
 # Launch the Chrome browser with options
