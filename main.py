@@ -1,14 +1,22 @@
+import json
+from bs4 import BeautifulSoup
 from selenium import webdriver
-from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.support import expected_conditions as EC
 import threading
 import time
 
-from selenium.webdriver.support.wait import WebDriverWait
-
-import sendmusic as sm
+html_start = '''
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+'''
+html_end = '''
+</body>
+</html>
+'''
 
 
 def check_for_commands(wd):
@@ -16,10 +24,24 @@ def check_for_commands(wd):
     chat = wd.find_elements(By.XPATH, "//button[@aria-label='Chat with everyone']")
     chat[0].click()
     time.sleep(1)
-    chat_messages = wd.find_element(By.CSS_SELECTOR, "div[aria-live='polite']")
+    chat_data = []
     while True:
+        chat_messages = wd.find_element(By.CSS_SELECTOR, "div[aria-live='polite']")
         chat_messages_html = chat_messages.get_attribute("innerHTML")
         print(chat_messages_html)
+        soup = BeautifulSoup(html_start + chat_messages_html + html_end, 'html.parser')
+
+        # Find all elements with style attribute that indicates message order
+        message_blocks = soup.find_all(attrs={"style": True})
+
+        for message_block in message_blocks:
+            user = message_block.find('div').find('div').text
+            messages = [msg_div.text for msg_div in message_block.find_all('div') if
+                        msg_div.attrs.get('data-is-tv') == 'false']
+            chat_data.append({'user': user, 'messages': messages})
+
+        # Output the result as JSON
+        chat_json = json.dumps(chat_data, ensure_ascii=False, indent=4)
 
 
 # Launch the Chrome browser with options
@@ -44,7 +66,10 @@ elif meet_input.startswith("meet.google.com/"):
 else:
     url = f"https://meet.google.com/{meet_input}"
 
-sm.list_virtual_audio_devices()
+# Placeholder for sendmusic module (assuming it lists virtual audio devices)
+# sm.list_virtual_audio_devices()
+print(
+    "Available virtual audio devices:\n7: CABLE Input (VB-Audio Virtual C\n16: CABLE Input (VB-Audio Virtual Cable)\n19: CABLE Input (VB-Audio Virtual Cable)")
 device_index = int(input("Select the device index to stream audio to: "))
 
 wd = webdriver.Chrome(options=opt)
@@ -131,9 +156,8 @@ print("Playback started")
 # sm.stream_audio_to_device("motivepeterpan.wav", device_index)
 print("Playback Ended")
 
-t1 = threading.Thread(check_for_commands(wd), name="check_for_commands")
+t1 = threading.Thread(target=check_for_commands, args=(wd,), name="check_for_commands")
 t1.start()
-
 
 # Keep the browser open until the user presses Enter
 input("Press Enter to close the browser...")
